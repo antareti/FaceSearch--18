@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>FaceSearch 3D</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg:#080808;
+  --panel:#111;
+  --border:#1f1f1f;
+  --accent:#ff6a00;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#111,#000 70%);
+  color:#fff;
+  font-family:Inter,Arial,sans-serif;
+  perspective:1400px;
+}
+
+/* ===== APP LAYOUT ===== */
+.app{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  min-height:100vh;
+  transform-style:preserve-3d;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  background:linear-gradient(180deg,#111,#0a0a0a);
+  border-right:1px solid var(--border);
+  padding:24px;
+  transform:translateZ(30px);
+}
+
+.logo{
+  font-size:22px;
+  font-weight:900;
+  color:var(--accent);
+  margin-bottom:30px;
+}
+
+.block h3{
+  font-size:12px;
+  color:#aaa;
+  text-transform:uppercase;
+}
+
+.face-box{
+  border:1px dashed #333;
+  border-radius:16px;
+  padding:16px;
+  text-align:center;
+  cursor:pointer;
+  transition:.3s;
+}
+
+.face-box:hover{
+  border-color:var(--accent);
+  box-shadow:0 0 30px rgba(255,106,0,.25);
+}
+
+.face-box img{
+  width:100%;
+  border-radius:12px;
+  margin-top:10px;
+}
+
+/* ===== MAIN ===== */
+.main{
+  padding:32px;
+  transform-style:preserve-3d;
+}
+
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+button{
+  padding:14px 26px;
+  background:linear-gradient(90deg,var(--accent),#ff9b3c);
+  border:none;
+  border-radius:12px;
+  font-weight:800;
+  cursor:pointer;
+  color:#000;
+  box-shadow:0 10px 40px rgba(255,106,0,.35);
+}
+
+button:disabled{
+  opacity:.4;
+  box-shadow:none;
+  cursor:default;
+}
+
+/* ===== STATUS & PROGRESS ===== */
+.status{
+  margin:18px 0 8px;
+  color:#ffb46a;
+}
+
+.progress{
+  height:8px;
+  background:#1b1b1b;
+  border-radius:8px;
+  overflow:hidden;
+  display:none;
+}
+
+.bar{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,var(--accent),#ffd2a8);
+}
+
+/* ===== RESULTS ===== */
+.section-title{
+  margin-top:32px;
+  font-weight:800;
+  color:#ff9b3c;
+}
+
+.results{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
+  gap:22px;
+}
+
+/* ===== 3D CARD ===== */
+.card{
+  position:relative;
+  background:linear-gradient(180deg,#111,#0a0a0a);
+  border:1px solid var(--border);
+  border-radius:18px;
+  overflow:hidden;
+  transform-style:preserve-3d;
+  transition:transform .15s ease,box-shadow .15s ease;
+}
+
+.card::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at var(--x,50%) var(--y,50%),rgba(255,255,255,.15),transparent 40%);
+  pointer-events:none;
+}
+
+.card img{
+  width:100%;
+  display:block;
+  transform:translateZ(40px);
+}
+
+.info{
+  padding:12px;
+  display:flex;
+  justify-content:space-between;
+  font-size:13px;
+}
+
+.badge{
+  color:var(--accent);
+  font-weight:800;
+}
+
+/* ===== 18+ ===== */
+.adult-card img{
+  filter:blur(18px) brightness(.6);
+}
+
+.adult-overlay{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  background:rgba(0,0,0,.55);
+  text-align:center;
+  font-size:13px;
+}
+
+.adult-overlay span{
+  font-size:28px;
+  margin-bottom:6px;
+}
+
+.unlock{
+  margin-top:6px;
+  padding:6px 12px;
+  font-size:12px;
+  border-radius:8px;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  background:transparent;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">FaceSearch</div>
+
+    <div class="block">
+      <h3>Загрузить лицо</h3>
+      <div class="face-box" id="drop">
+        <span id="dropText">Нажмите или перетащите</span>
+        <input type="file" hidden accept="image/*" id="file">
+        <img id="preview">
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="header">
+      <h2>Результаты поиска</h2>
+      <button id="search" disabled>Начать поиск</button>
+    </div>
+
+    <div class="status" id="status"></div>
+
+    <div class="progress" id="progress">
+      <div class="bar" id="bar"></div>
+    </div>
+
+    <div class="section-title">Совпадения</div>
+    <div class="results" id="results"></div>
+
+    <div class="section-title">🔞 18+ источники (ограниченный доступ)</div>
+    <div class="results" id="adultResults"></div>
+  </main>
+
+</div>
+
+<script>
+const drop=document.getElementById('drop');
+const fileInput=document.getElementById('file');
+const preview=document.getElementById('preview');
+const searchBtn=document.getElementById('search');
+const results=document.getElementById('results');
+const adultResults=document.getElementById('adultResults');
+const progress=document.getElementById('progress');
+const bar=document.getElementById('bar');
+const status=document.getElementById('status');
+
+drop.onclick=()=>fileInput.click();
+
+fileInput.onchange=()=>{
+  const f=fileInput.files[0];
+  if(!f)return;
+  preview.src=URL.createObjectURL(f);
+  document.getElementById('dropText').style.display='none';
+  searchBtn.disabled=false;
+};
+
+searchBtn.onclick=()=>{
+  results.innerHTML='';
+  adultResults.innerHTML='';
+  progress.style.display='block';
+  bar.style.width='0%';
+  status.textContent='Ищем совпадения…';
+
+  let p=0;
+  const i=setInterval(()=>{
+    p+=Math.random()*10;
+    p=Math.min(p,100);
+    bar.style.width=p+'%';
+    status.textContent='Сканирование '+Math.floor(p)+'%';
+    if(p>=100){
+      clearInterval(i);
+      showResults();
+      showAdultResults();
+      status.textContent='Поиск завершён';
+    }
+  },300);
+};
+
+function showResults(){
+  for(let i=0;i<28;i++){
+    const sim=70+Math.floor(Math.random()*26);
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML=`
+      <img src="https://picsum.photos/300?random=${Math.random()}">
+      <div class="info">
+        <span>Источник</span>
+        <span class="badge">${sim}%</span>
+      </div>
+    `;
+    add3DTilt(card);
+    results.appendChild(card);
+  }
+}
+
+function showAdultResults(){
+  for(let i=0;i<18;i++){
+    const card=document.createElement('div');
+    card.className='card adult-card';
+    card.innerHTML=`
+      <img src="https://picsum.photos/300?random=${Math.random()}">
+      <div class="adult-overlay">
+        <span>🔞</span>
+        <div>Контент 18+</div>
+        <button class="unlock">Разблокировать</button>
+      </div>
+    `;
+    card.onclick=()=>{
+      alert('Доступ к 18+ источникам ограничен. Требуется подтверждение возраста или подписка.');
+    };
+    add3DTilt(card);
+    adultResults.appendChild(card);
+  }
+}
+
+/* ===== 3D TILT ===== */
+function add3DTilt(el){
+  el.addEventListener('mousemove',e=>{
+    const r=el.getBoundingClientRect();
+    const x=e.clientX-r.left;
+    const y=e.clientY-r.top;
+    const rx=-(y/r.height-.5)*14;
+    const ry=(x/r.width-.5)*14;
+    el.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg) translateZ(20px)`;
+    el.style.setProperty('--x',x+'px');
+    el.style.setProperty('--y',y+'px');
+    el.style.boxShadow='0 30px 60px rgba(0,0,0,.6)';
+  });
+  el.addEventListener('mouseleave',()=>{
+    el.style.transform='rotateX(0) rotateY(0) translateZ(0)';
+    el.style.boxShadow='none';
+  });
+}
+</script>
+
+</body>
+</html>
