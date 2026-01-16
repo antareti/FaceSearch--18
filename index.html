@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>FaceSearch 3D Scanner</title>
+<title>FaceSearch 3D Scanner +18</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -23,14 +23,12 @@ body{
   perspective:1400px;
 }
 
-/* ===== LAYOUT ===== */
 .app{
   display:grid;
   grid-template-columns:260px 1fr;
   min-height:100vh;
 }
 
-/* ===== SIDEBAR ===== */
 .sidebar{
   background:linear-gradient(180deg,#111,#0a0a0a);
   border-right:1px solid var(--border);
@@ -50,7 +48,6 @@ body{
   text-transform:uppercase;
 }
 
-/* ===== FACE BOX ===== */
 .face-box{
   position:relative;
   border:1px dashed #333;
@@ -67,7 +64,6 @@ body{
   display:block;
 }
 
-/* ===== SCANNER ===== */
 .scanner{
   position:absolute;
   inset:0;
@@ -128,7 +124,6 @@ button{
 
 button:disabled{opacity:.4}
 
-/* ===== STATUS ===== */
 .status{
   margin:18px 0 8px;
   color:#ffb46a;
@@ -148,7 +143,6 @@ button:disabled{opacity:.4}
   background:linear-gradient(90deg,var(--accent),#ffd2a8);
 }
 
-/* ===== RESULTS ===== */
 .section-title{
   margin-top:32px;
   font-weight:800;
@@ -162,7 +156,9 @@ button:disabled{opacity:.4}
   gap:22px;
 }
 
+/* ===== CARD ===== */
 .card{
+  position:relative;
   background:#0e0e0e;
   border:1px solid var(--border);
   border-radius:18px;
@@ -189,7 +185,7 @@ button:disabled{opacity:.4}
   font-weight:800;
 }
 
-/* ===== 18+ ===== */
+/* ===== 18+ CARD ===== */
 .adult-card img{
   filter:blur(18px) brightness(.6);
 }
@@ -201,28 +197,67 @@ button:disabled{opacity:.4}
   flex-direction:column;
   align-items:center;
   justify-content:center;
+  text-align:center;
   background:rgba(0,0,0,.55);
   font-size:13px;
+}
+
+.adult-overlay span{
+  font-size:28px;
+  margin-bottom:6px;
+}
+
+.unlock{
+  margin-top:6px;
+  padding:6px 12px;
+  font-size:12px;
+  border-radius:8px;
+  border:1px solid var(--accent);
+  color:var(--accent);
+  background:transparent;
+}
+
+/* 18+ SCANNER EFFECT */
+.adult-scanner{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+}
+
+.adult-scanner .grid{
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(rgba(255,106,0,.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,106,0,.2) 1px, transparent 1px);
+  background-size:20px 20px;
+  animation:gridMove 3s linear infinite;
+}
+
+.adult-scanner .scan-line{
+  position:absolute;
+  left:0;
+  right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  animation:scan 2s linear infinite;
+  box-shadow:0 0 15px var(--accent);
 }
 </style>
 </head>
 
 <body>
-
 <div class="app">
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo">FaceSearch</div>
-
     <div class="block">
-      <h3>Загруженное лицо</h3>
+      <h3>Загрузить лицо</h3>
       <div class="face-box" id="drop">
         <span id="dropText">Нажмите или перетащите</span>
         <input type="file" hidden accept="image/*" id="file">
         <img id="preview">
-
-        <!-- SCANNER -->
         <div class="scanner" id="scanner">
           <div class="grid"></div>
           <div class="scan-line"></div>
@@ -239,9 +274,7 @@ button:disabled{opacity:.4}
     </div>
 
     <div class="status" id="status"></div>
-    <div class="progress" id="progress">
-      <div class="bar" id="bar"></div>
-    </div>
+    <div class="progress" id="progress"><div class="bar" id="bar"></div></div>
 
     <div class="section-title">Совпадения</div>
     <div class="results" id="results"></div>
@@ -253,28 +286,29 @@ button:disabled{opacity:.4}
 </div>
 
 <script>
-const drop = document.getElementById('drop');
-const fileInput = document.getElementById('file');
-const preview = document.getElementById('preview');
-const scanner = document.getElementById('scanner');
-const searchBtn = document.getElementById('search');
-const results = document.getElementById('results');
-const adultResults = document.getElementById('adultResults');
-const progress = document.getElementById('progress');
-const bar = document.getElementById('bar');
-const status = document.getElementById('status');
+const drop=document.getElementById('drop');
+const fileInput=document.getElementById('file');
+const preview=document.getElementById('preview');
+const scanner=document.getElementById('scanner');
+const searchBtn=document.getElementById('search');
+const results=document.getElementById('results');
+const adultResults=document.getElementById('adultResults');
+const progress=document.getElementById('progress');
+const bar=document.getElementById('bar');
+const status=document.getElementById('status');
 
-drop.onclick = () => fileInput.click();
+drop.onclick=()=>fileInput.click();
 
-fileInput.onchange = () => {
-  const f = fileInput.files[0];
+fileInput.onchange=()=>{
+  const f=fileInput.files[0];
   if(!f) return;
-  preview.src = URL.createObjectURL(f);
+  preview.src=URL.createObjectURL(f);
   document.getElementById('dropText').style.display='none';
-  searchBtn.disabled = false;
+  searchBtn.disabled=true;
+  setTimeout(()=>searchBtn.disabled=false,50);
 };
 
-searchBtn.onclick = () => {
+searchBtn.onclick=()=>{
   results.innerHTML='';
   adultResults.innerHTML='';
   progress.style.display='block';
@@ -315,14 +349,19 @@ function showResults(){
 
 function showAdult(){
   for(let i=0;i<18;i++){
-    adultResults.innerHTML+=`
-      <div class="card adult-card">
-        <img src="https://picsum.photos/300?random=${Math.random()}">
-        <div class="adult-overlay">🔞 Контент 18+</div>
+    const card=document.createElement('div');
+    card.className='card adult-card';
+    card.innerHTML=`
+      <img src="https://picsum.photos/300?random=${Math.random()}">
+      <div class="adult-overlay">🔞 Контент 18+
+        <div class="adult-scanner">
+          <div class="grid"></div>
+          <div class="scan-line"></div>
+        </div>
       </div>`;
+    adultResults.appendChild(card);
   }
 }
 </script>
-
 </body>
 </html>
