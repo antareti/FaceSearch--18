@@ -96,6 +96,12 @@ button{
   font-weight:800;
   cursor:pointer;
   color:#000;
+  transition: all .2s;
+}
+
+button:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 15px var(--accent);
 }
 
 .section{
@@ -121,8 +127,15 @@ button{
   overflow:hidden;
   cursor:pointer;
   transform-style:preserve-3d;
-  transition:.15s;
+  transition:.15s, opacity .3s, transform .3s;
   position:relative;
+  opacity:0;
+  transform:translateY(20px);
+}
+
+.card.show{
+  opacity:1;
+  transform:translateY(0);
 }
 
 .card img{
@@ -175,6 +188,12 @@ button{
   display:none;
 }
 
+.adult:hover::after{
+  content:"🔞 Клик для подтверждения возраста";
+  font-size:16px;
+  background:rgba(0,0,0,0.7);
+}
+
 /* MODALS */
 .modal{
   position:fixed;
@@ -212,6 +231,21 @@ button{
   overflow:auto;
   color:#9f9;
 }
+
+/* PROGRESS BAR */
+.progress-bar{
+  height:6px;
+  background:#333;
+  border-radius:3px;
+  overflow:hidden;
+  margin-top:10px;
+}
+.progress-bar div{
+  height:100%;
+  width:0%;
+  background:var(--accent);
+  transition:width .3s;
+}
 </style>
 </head>
 
@@ -219,6 +253,7 @@ button{
 
 <audio id="scanSound" src="https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-scan-905.mp3"></audio>
 <audio id="doneSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
+<audio id="clickSound" src="https://assets.mixkit.co/sfx/preview/mixkit-mouse-click-1117.mp3"></audio>
 
 <div class="app">
 
@@ -236,6 +271,7 @@ button{
   </div>
 
   <div class="log" id="log"></div>
+  <div class="progress-bar"><div id="progressFill"></div></div>
 </aside>
 
 <main class="main">
@@ -283,9 +319,11 @@ const scanner=document.getElementById('scanner');
 const results=document.getElementById('results');
 const adultResults=document.getElementById('adultResults');
 const log=document.getElementById('log');
+const progressFill=document.getElementById('progressFill');
 
 const scanSound=document.getElementById('scanSound');
 const doneSound=document.getElementById('doneSound');
+const clickSound=document.getElementById('clickSound');
 
 const imgModal=document.getElementById('imgModal');
 const modalImg=document.getElementById('modalImg');
@@ -295,9 +333,16 @@ const adultModal=document.getElementById('adultModal');
 
 let adultUnlocked=false;
 
+// Drag & Drop
 drop.onclick=()=>file.click();
+drop.addEventListener('dragover', e => e.preventDefault());
+drop.addEventListener('drop', e => {
+  e.preventDefault();
+  file.files = e.dataTransfer.files;
+  file.onchange();
+});
 
-file.onchange=()=>{
+file.onchange=()=> {
   preview.src=URL.createObjectURL(file.files[0]);
   document.getElementById('dropText').style.display='none';
   search.disabled=false;
@@ -307,6 +352,7 @@ search.onclick=()=>{
   results.innerHTML='';
   adultResults.innerHTML='';
   log.textContent='';
+  progressFill.style.width='0%';
   scanner.style.display='block';
   scanSound.loop=true;
   scanSound.play();
@@ -323,6 +369,7 @@ search.onclick=()=>{
   const t=setInterval(()=>{
     log.innerHTML+=`[AI] ${steps[i]}<br>`;
     log.scrollTop=9999;
+    progressFill.style.width = ((i+1)/steps.length)*100+'%';
     i++;
     if(i>=steps.length){
       clearInterval(t);
@@ -352,6 +399,9 @@ function createCard(container,i,isAdult){
       <span>${isAdult?'18+ база':'Источник'}</span>
       <span class="badge">${sim}%</span>
     </div>`;
+  
+  setTimeout(()=>card.classList.add('show'), 50*i);
+
   card.onmousemove=e=>{
     const r=card.getBoundingClientRect();
     const x=(e.clientX-r.left-r.width/2)/20;
@@ -361,6 +411,7 @@ function createCard(container,i,isAdult){
   card.onmouseleave=()=>card.style.transform='none';
 
   card.onclick=()=>{
+    clickSound.play();
     if(isAdult && !adultUnlocked){
       adultModal.style.display='flex';
       return;
