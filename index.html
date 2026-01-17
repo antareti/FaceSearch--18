@@ -151,7 +151,12 @@ button{
 
 /* 18+ */
 .adult img{
-  filter:blur(18px) brightness(.6);
+  filter:blur(18px) brightness(.4);
+  transition: filter .3s;
+}
+
+.adult.unlocked img{
+  filter:none;
 }
 
 .adult::after{
@@ -163,6 +168,11 @@ button{
   justify-content:center;
   font-size:38px;
   background:rgba(0,0,0,.5);
+  pointer-events:none;
+}
+
+.adult.unlocked::after{
+  display:none;
 }
 
 /* MODALS */
@@ -366,6 +376,9 @@ function createCard(container,i,isAdult){
 function unlockAdult(){
   adultUnlocked=true;
   adultModal.style.display='none';
+  document.querySelectorAll('.adult').forEach(card=>{
+    card.classList.add('unlocked');
+  });
 }
 </script>
 
