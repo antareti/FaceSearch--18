@@ -2,15 +2,15 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>FaceSearch 3D Scanner +18</title>
+<title>FaceSearch AI • 3D Scanner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 :root{
-  --bg:#080808;
-  --panel:#111;
-  --border:#1f1f1f;
   --accent:#ff6a00;
+  --bg:#050505;
+  --panel:#0e0e0e;
+  --border:#1f1f1f;
 }
 
 *{box-sizing:border-box}
@@ -28,32 +28,32 @@ body{
   min-height:100vh;
 }
 
+/* SIDEBAR */
 .sidebar{
-  background:linear-gradient(180deg,#111,#0a0a0a);
-  border-right:1px solid var(--border);
   padding:24px;
+  border-right:1px solid var(--border);
+  background:linear-gradient(180deg,#111,#080808);
 }
 
 .logo{
   font-size:22px;
   font-weight:900;
   color:var(--accent);
-  margin-bottom:30px;
 }
 
 .face-box{
-  position:relative;
+  margin-top:20px;
   border:1px dashed #333;
   border-radius:16px;
   padding:14px;
   text-align:center;
   cursor:pointer;
+  position:relative;
 }
 
 .face-box img{
   width:100%;
   border-radius:12px;
-  display:block;
 }
 
 .scanner{
@@ -70,28 +70,22 @@ body{
     linear-gradient(rgba(255,106,0,.25) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,106,0,.25) 1px, transparent 1px);
   background-size:24px 24px;
-  animation:gridMove 3s linear infinite;
+  animation:grid 3s linear infinite;
 }
 
 .scan-line{
   position:absolute;
-  left:0;
-  right:0;
+  left:0;right:0;
   height:3px;
   background:linear-gradient(90deg,transparent,var(--accent),transparent);
-  animation:scan 2.2s linear infinite;
+  animation:scan 2s linear infinite;
+  box-shadow:0 0 20px var(--accent);
 }
 
-@keyframes scan{
-  from{top:-5%}
-  to{top:105%}
-}
+@keyframes scan{from{top:-5%}to{top:105%}}
+@keyframes grid{to{background-position:48px 48px}}
 
-@keyframes gridMove{
-  from{background-position:0 0}
-  to{background-position:48px 48px}
-}
-
+/* MAIN */
 .main{padding:32px}
 
 button{
@@ -101,24 +95,50 @@ button{
   border-radius:12px;
   font-weight:800;
   cursor:pointer;
+  color:#000;
+}
+
+.section{
+  margin-top:30px;
+}
+
+.section h3{
+  color:#ff9b3c;
 }
 
 .results{
-  margin-top:20px;
+  margin-top:14px;
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:20px;
+  gap:22px;
 }
 
+/* CARD */
 .card{
-  background:#0e0e0e;
+  background:var(--panel);
   border:1px solid var(--border);
   border-radius:18px;
   overflow:hidden;
   cursor:pointer;
+  transform-style:preserve-3d;
+  transition:.15s;
+  position:relative;
 }
 
-.card img{width:100%}
+.card img{
+  width:100%;
+  display:block;
+  transform:translateZ(40px);
+}
+
+.card:hover{
+  animation:glitch .15s;
+}
+
+@keyframes glitch{
+  0%{filter:none}
+  50%{filter:hue-rotate(35deg)}
+}
 
 .info{
   padding:10px;
@@ -129,11 +149,27 @@ button{
 
 .badge{color:var(--accent);font-weight:800}
 
-/* ===== MODAL ===== */
+/* 18+ */
+.adult img{
+  filter:blur(18px) brightness(.6);
+}
+
+.adult::after{
+  content:"🔞";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:38px;
+  background:rgba(0,0,0,.5);
+}
+
+/* MODALS */
 .modal{
   position:fixed;
   inset:0;
-  background:rgba(0,0,0,.75);
+  background:rgba(0,0,0,.85);
   display:none;
   align-items:center;
   justify-content:center;
@@ -142,10 +178,10 @@ button{
 
 .modal-box{
   background:#0e0e0e;
-  border-radius:18px;
-  max-width:500px;
-  width:90%;
   padding:20px;
+  border-radius:18px;
+  width:90%;
+  max-width:520px;
 }
 
 .modal-box img{
@@ -153,31 +189,34 @@ button{
   border-radius:12px;
 }
 
-.modal-info{
-  margin-top:12px;
-  display:flex;
-  justify-content:space-between;
-}
-
-.close{
-  margin-top:14px;
-  width:100%;
+/* AI LOG */
+.log{
+  margin-top:20px;
+  background:#070707;
+  border:1px solid #111;
+  border-radius:12px;
+  padding:12px;
+  font-family:monospace;
+  font-size:12px;
+  height:120px;
+  overflow:auto;
+  color:#9f9;
 }
 </style>
 </head>
 
 <body>
 
-<!-- AUDIO -->
 <audio id="scanSound" src="https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-scan-905.mp3"></audio>
 <audio id="doneSound" src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3"></audio>
 
 <div class="app">
 
 <aside class="sidebar">
-  <div class="logo">FaceSearch</div>
+  <div class="logo">FaceSearch AI</div>
+
   <div class="face-box" id="drop">
-    <span id="dropText">Нажмите или перетащите</span>
+    <span id="dropText">Загрузить лицо</span>
     <input type="file" hidden id="file">
     <img id="preview">
     <div class="scanner" id="scanner">
@@ -185,42 +224,66 @@ button{
       <div class="scan-line"></div>
     </div>
   </div>
+
+  <div class="log" id="log"></div>
 </aside>
 
 <main class="main">
   <button id="search" disabled>Начать поиск</button>
-  <div class="results" id="results"></div>
+
+  <div class="section">
+    <h3>Совпадения</h3>
+    <div class="results" id="results"></div>
+  </div>
+
+  <div class="section">
+    <h3>🔞 18+ источники</h3>
+    <div class="results" id="adult"></div>
+  </div>
 </main>
 
 </div>
 
-<!-- MODAL -->
-<div class="modal" id="modal">
+<!-- MODALS -->
+<div class="modal" id="imgModal">
   <div class="modal-box">
     <img id="modalImg">
-    <div class="modal-info">
-      <span id="modalSource"></span>
+    <div class="info">
+      <span id="modalSrc"></span>
       <span class="badge" id="modalSim"></span>
     </div>
-    <button class="close" onclick="modal.style.display='none'">Закрыть</button>
+    <button onclick="imgModal.style.display='none'">Закрыть</button>
+  </div>
+</div>
+
+<div class="modal" id="adultModal">
+  <div class="modal-box">
+    <h3>🔞 Контент 18+</h3>
+    <p>Подтвердите возраст или подключите PRO</p>
+    <button onclick="unlockAdult()">Подтвердить возраст</button>
   </div>
 </div>
 
 <script>
-const drop=document.getElementById('drop');
 const file=document.getElementById('file');
+const drop=document.getElementById('drop');
 const preview=document.getElementById('preview');
-const scanner=document.getElementById('scanner');
 const search=document.getElementById('search');
+const scanner=document.getElementById('scanner');
 const results=document.getElementById('results');
+const adult=document.getElementById('adult');
+const log=document.getElementById('log');
 
 const scanSound=document.getElementById('scanSound');
 const doneSound=document.getElementById('doneSound');
 
-const modal=document.getElementById('modal');
+const imgModal=document.getElementById('imgModal');
 const modalImg=document.getElementById('modalImg');
-const modalSource=document.getElementById('modalSource');
+const modalSrc=document.getElementById('modalSrc');
 const modalSim=document.getElementById('modalSim');
+const adultModal=document.getElementById('adultModal');
+
+let adultUnlocked=false;
 
 drop.onclick=()=>file.click();
 
@@ -232,38 +295,77 @@ file.onchange=()=>{
 
 search.onclick=()=>{
   results.innerHTML='';
+  adult.innerHTML='';
+  log.textContent='';
   scanner.style.display='block';
   scanSound.loop=true;
   scanSound.play();
 
-  setTimeout(()=>{
-    scanner.style.display='none';
-    scanSound.pause();
-    doneSound.play();
-    showResults();
-  },3000);
+  const steps=[
+    'Создание face-hash',
+    'Построение 3D-модели',
+    'Сопоставление с базами',
+    'Deep Neural Match',
+    'Агрегация результатов'
+  ];
+
+  let i=0;
+  const t=setInterval(()=>{
+    log.innerHTML+=`[AI] ${steps[i]}<br>`;
+    log.scrollTop=9999;
+    i++;
+    if(i>=steps.length){
+      clearInterval(t);
+      scanner.style.display='none';
+      scanSound.pause();
+      doneSound.play();
+      showResults();
+    }
+  },700);
 };
 
 function showResults(){
-  for(let i=0;i<28;i++){
-    const sim=70+Math.floor(Math.random()*25);
-    const img=`https://picsum.photos/300?random=${Math.random()}`;
-    const card=document.createElement('div');
-    card.className='card';
-    card.innerHTML=`
-      <img src="${img}">
-      <div class="info">
-        <span>Источник</span>
-        <span class="badge">${sim}%</span>
-      </div>`;
-    card.onclick=()=>{
-      modalImg.src=img;
-      modalSource.textContent='Источник: база данных';
-      modalSim.textContent=sim+'%';
-      modal.style.display='flex';
-    };
-    results.appendChild(card);
+  for(let i=1;i<=50;i++){
+    createCard(results,i,false);
+    createCard(adult,i,true);
   }
+}
+
+function createCard(container,i,isAdult){
+  const sim=70+Math.floor(Math.random()*25);
+  const img=`https://picsum.photos/300?random=${i+(isAdult?100:0)}`;
+  const card=document.createElement('div');
+  card.className='card'+(isAdult?' adult':'');
+  card.innerHTML=`
+    <img src="${img}">
+    <div class="info">
+      <span>${isAdult?'18+ база':'Источник'}</span>
+      <span class="badge">${sim}%</span>
+    </div>`;
+  card.onmousemove=e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left-r.width/2)/20;
+    const y=(e.clientY-r.top-r.height/2)/20;
+    card.style.transform=`rotateY(${x}deg) rotateX(${-y}deg)`;
+  };
+  card.onmouseleave=()=>card.style.transform='none';
+
+  card.onclick=()=>{
+    if(isAdult && !adultUnlocked){
+      adultModal.style.display='flex';
+      return;
+    }
+    modalImg.src=img;
+    modalSrc.textContent=isAdult?'18+ источник':'Открытая база';
+    modalSim.textContent=sim+'%';
+    imgModal.style.display='flex';
+  };
+  container.appendChild(card);
+}
+
+function unlockAdult(){
+  adultUnlocked=true;
+  adultModal.style.display='none';
 }
 </script>
 
