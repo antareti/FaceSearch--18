@@ -248,7 +248,7 @@ button{
 
   <div class="section">
     <h3>🔞 18+ источники</h3>
-    <div class="results" id="adult"></div>
+    <div class="results" id="adultResults"></div>
   </div>
 </main>
 
@@ -281,7 +281,7 @@ const preview=document.getElementById('preview');
 const search=document.getElementById('search');
 const scanner=document.getElementById('scanner');
 const results=document.getElementById('results');
-const adult=document.getElementById('adult');
+const adultResults=document.getElementById('adultResults');
 const log=document.getElementById('log');
 
 const scanSound=document.getElementById('scanSound');
@@ -305,7 +305,7 @@ file.onchange=()=>{
 
 search.onclick=()=>{
   results.innerHTML='';
-  adult.innerHTML='';
+  adultResults.innerHTML='';
   log.textContent='';
   scanner.style.display='block';
   scanSound.loop=true;
@@ -337,7 +337,7 @@ search.onclick=()=>{
 function showResults(){
   for(let i=1;i<=50;i++){
     createCard(results,i,false);
-    createCard(adult,i,true);
+    createCard(adultResults,i,true);
   }
 }
 
